@@ -15,7 +15,7 @@ import About from "./pages/About/About";
 import SignIn from "./pages/Account/SignIn";
 import SignUp from "./pages/Account/SignUp";
 import Cart from "./pages/Cart/Cart";
-import Contact from "./pages/contact/Contact";
+import Contact from "./pages/Contact/Contact";
 import Home from "./pages/Home/Home";
 import Journal from "./pages/Journal/Journal";
 import Offer from "./pages/Offer/Offer";
