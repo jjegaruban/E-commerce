@@ -1,198 +1,267 @@
 import React, { useState } from "react";
-import { BsCheckCircleFill } from "react-icons/bs";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logoLight } from "../../assets/images";
 
 const SignIn = () => {
-  // ============= Initial State Start here =============
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // ============= Initial State End here ===============
-  // ============= Error Msg Start here =================
   const [errEmail, setErrEmail] = useState("");
   const [errPassword, setErrPassword] = useState("");
-
-  // ============= Error Msg End here ===================
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
-  // ============= Event Handler Start here =============
+
   const handleEmail = (e) => {
     setEmail(e.target.value);
     setErrEmail("");
   };
+
   const handlePassword = (e) => {
     setPassword(e.target.value);
     setErrPassword("");
   };
-  // ============= Event Handler End here ===============
-  const handleSignUp = (e) => {
+
+  const validateEmail = (email) => {
+    return String(email)
+      .toLowerCase()
+      .match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    let hasError = false;
+    
     if (!email) {
-      setErrEmail("Enter your email");
+      setErrEmail("Email is required");
+      hasError = true;
+    } else if (!validateEmail(email)) {
+      setErrEmail("Please enter a valid email");
+      hasError = true;
     }
-
+    
     if (!password) {
-      setErrPassword("Create a password");
+      setErrPassword("Password is required");
+      hasError = true;
+    } else if (password.length < 6) {
+      setErrPassword("Password must be at least 6 characters");
+      hasError = true;
     }
-    // ============== Getting the value ==============
-    if (email && password) {
-      setSuccessMsg(
-        `Hello dear, Thank you for your attempt. We are processing to validate your access. Till then stay connected and additional assistance will be sent to you by your mail at ${email}`
-      );
-      setEmail("");
-      setPassword("");
+    
+    if (!hasError) {
+      setIsLoading(true);
+      
+      // Simulate API call
+      setTimeout(() => {
+        setSuccessMsg(`Welcome back! You have successfully signed in.`);
+        setIsLoading(false);
+        
+        // Reset form after success
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      }, 1500);
     }
   };
+
+  const handleDemoLogin = () => {
+    setEmail("demo@jegaruban.com");
+    setPassword("demo123456");
+  };
+
   return (
-    <div className="w-full h-screen flex items-center justify-center">
-      <div className="w-1/2 hidden lgl:inline-flex h-full text-white">
-        <div className="w-[450px] h-full bg-primeColor px-10 flex flex-col gap-6 justify-center">
+    <div className="min-h-screen bg-white flex">
+      {/* Left side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gray-50 flex-col justify-between p-12">
+        <div>
           <Link to="/">
-            <img src={logoLight} alt="logoImg" className="w-28" />
+            <img src={logoLight} alt="Jegaruban" className="w-24" />
           </Link>
-          <div className="flex flex-col gap-1 -mt-1">
-            <h1 className="font-titleFont text-xl font-medium">
-              Stay sign in for more
-            </h1>
-            <p className="text-base">When you sign in, you are with us!</p>
-          </div>
-          <div className="w-[300px] flex items-start gap-3">
-            <span className="text-green-500 mt-1">
-              <BsCheckCircleFill />
-            </span>
-            <p className="text-base text-gray-300">
-              <span className="text-white font-semibold font-titleFont">
-                Get started fast with OREBI
-              </span>
-              <br />
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
-              nisi dolor recusandae consectetur!
-            </p>
-          </div>
-          <div className="w-[300px] flex items-start gap-3">
-            <span className="text-green-500 mt-1">
-              <BsCheckCircleFill />
-            </span>
-            <p className="text-base text-gray-300">
-              <span className="text-white font-semibold font-titleFont">
-                Access all OREBI services
-              </span>
-              <br />
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
-              nisi dolor recusandae consectetur!
-            </p>
-          </div>
-          <div className="w-[300px] flex items-start gap-3">
-            <span className="text-green-500 mt-1">
-              <BsCheckCircleFill />
-            </span>
-            <p className="text-base text-gray-300">
-              <span className="text-white font-semibold font-titleFont">
-                Trusted by online Shoppers
-              </span>
-              <br />
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
-              nisi dolor recusandae consectetur!
-            </p>
-          </div>
-          <div className="flex items-center justify-between mt-10">
-            <Link to="/">
-              <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-                © OREBI
-              </p>
-            </Link>
-            <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-              Terms
-            </p>
-            <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-              Privacy
-            </p>
-            <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-              Security
-            </p>
+        </div>
+        
+        <div className="max-w-md">
+          <h1 className="text-4xl font-light text-gray-900 mb-4">
+            Welcome back
+          </h1>
+          <p className="text-gray-600 text-lg mb-8">
+            Sign in to access your account, track orders, and manage your preferences.
+          </p>
+          
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <span className="text-gray-700">✓</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 mb-1">Track your orders</h3>
+                <p className="text-sm text-gray-600">View order history and status in real-time</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <span className="text-gray-700">✓</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 mb-1">Manage your wishlist</h3>
+                <p className="text-sm text-gray-600">Save items you love for later</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <span className="text-gray-700">✓</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 mb-1">Express checkout</h3>
+                <p className="text-sm text-gray-600">Faster purchasing with saved details</p>
+              </div>
+            </div>
           </div>
         </div>
+        
+        <div className="flex items-center gap-6 text-sm text-gray-500">
+          <Link to="/" className="hover:text-gray-900 transition-colors">
+            © Jegaruban
+          </Link>
+          <Link to="/terms" className="hover:text-gray-900 transition-colors">
+            Terms
+          </Link>
+          <Link to="/privacy" className="hover:text-gray-900 transition-colors">
+            Privacy
+          </Link>
+          <Link to="/security" className="hover:text-gray-900 transition-colors">
+            Security
+          </Link>
+        </div>
       </div>
-      <div className="w-full lgl:w-1/2 h-full">
-        {successMsg ? (
-          <div className="w-full lgl:w-[500px] h-full flex flex-col justify-center">
-            <p className="w-full px-4 py-10 text-green-500 font-medium font-titleFont">
-              {successMsg}
-            </p>
-            <Link to="/signup">
-              <button
-                className="w-full h-10 bg-primeColor text-gray-200 rounded-md text-base font-titleFont font-semibold 
-            tracking-wide hover:bg-black hover:text-white duration-300"
-              >
-                Sign Up
-              </button>
-            </Link>
-          </div>
-        ) : (
-          <form className="w-full lgl:w-[450px] h-screen flex items-center justify-center">
-            <div className="px-6 py-4 w-full h-[90%] flex flex-col justify-center overflow-y-scroll scrollbar-thin scrollbar-thumb-primeColor">
-              <h1 className="font-titleFont underline underline-offset-4 decoration-[1px] font-semibold text-3xl mdl:text-4xl mb-4">
-                Sign in
-              </h1>
-              <div className="flex flex-col gap-3">
+
+      {/* Right side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          {successMsg ? (
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl">✓</span>
+              </div>
+              <h2 className="text-2xl font-light text-gray-900 mb-3">
+                Signed in successfully
+              </h2>
+              <p className="text-gray-600 mb-6">
+                {successMsg}
+              </p>
+              <p className="text-sm text-gray-500">
+                Redirecting you to the homepage...
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="text-center lg:text-left mb-8">
+                <h2 className="text-3xl font-light text-gray-900 mb-2">
+                  Sign in
+                </h2>
+                <p className="text-gray-600">
+                  Don't have an account?{" "}
+                  <Link to="/signup" className="border-b border-gray-300 pb-0.5 hover:border-gray-900 transition-colors">
+                    Create one
+                  </Link>
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Email */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Work Email
-                  </p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email address
+                  </label>
                   <input
-                    onChange={handleEmail}
-                    value={email}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
                     type="email"
-                    placeholder="john@workemail.com"
+                    value={email}
+                    onChange={handleEmail}
+                    placeholder="name@example.com"
+                    className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors text-gray-900 placeholder-gray-400 ${
+                      errEmail
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-gray-500"
+                    }`}
                   />
                   {errEmail && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
+                    <p className="text-sm text-red-500 mt-2">
                       {errEmail}
                     </p>
                   )}
                 </div>
 
                 {/* Password */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Password
-                  </p>
-                  <input
-                    onChange={handlePassword}
-                    value={password}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="password"
-                    placeholder="Create password"
-                  />
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Password
+                    </label>
+                    <Link 
+                      to="/forgot-password" 
+                      className="text-sm text-gray-500 hover:text-gray-900 border-b border-gray-300 pb-0.5"
+                    >
+                      Forgot?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={handlePassword}
+                      placeholder="Enter your password"
+                      className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors text-gray-900 placeholder-gray-400 ${
+                        errPassword
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:border-gray-500"
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
                   {errPassword && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
+                    <p className="text-sm text-red-500 mt-2">
                       {errPassword}
                     </p>
                   )}
                 </div>
 
+                {/* Submit button */}
                 <button
-                  onClick={handleSignUp}
-                  className="bg-primeColor hover:bg-black text-gray-200 hover:text-white cursor-pointer w-full text-base font-medium h-10 rounded-md  duration-300"
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sign In
+                  {isLoading ? "Signing in..." : "Sign in"}
                 </button>
-                <p className="text-sm text-center font-titleFont font-medium">
-                  Don't have an Account?{" "}
-                  <Link to="/signup">
-                    <span className="hover:text-blue-600 duration-300">
-                      Sign up
-                    </span>
+
+                {/* Demo button */}
+                <button
+                  type="button"
+                  onClick={handleDemoLogin}
+                  className="w-full bg-white text-gray-700 py-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  Use demo account
+                </button>
+
+                {/* Mobile sign up link */}
+                <p className="text-center text-sm text-gray-600 lg:hidden">
+                  Don't have an account?{" "}
+                  <Link to="/signup" className="border-b border-gray-300 pb-0.5 hover:border-gray-900">
+                    Sign up
                   </Link>
                 </p>
-              </div>
-            </div>
-          </form>
-        )}
+              </form>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

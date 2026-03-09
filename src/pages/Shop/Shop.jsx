@@ -1,29 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import Pagination from "../../components/pageProps/shopPage/Pagination";
 import ProductBanner from "../../components/pageProps/shopPage/ProductBanner";
 import ShopSideNav from "../../components/pageProps/shopPage/ShopSideNav";
+import Notification from "../../components/Notification/Notification";
+import { useLocation } from "react-router-dom";
 
 const Shop = () => {
+  const location = useLocation();
   const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [notification, setNotification] = useState({
+    visible: false,
+    message: "",
+    type: "success"
+  });
+
+  useEffect(() => {
+    // Check if we have a notification from added to cart
+    if (location.state?.addedToCart) {
+      showNotification(location.state.message || "Item added to cart successfully!");
+      // Clear the location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  const showNotification = (message, type = "success") => {
+    setNotification({
+      visible: true,
+      message,
+      type
+    });
+  };
+
+  const hideNotification = () => {
+    setNotification(prev => ({
+      ...prev,
+      visible: false
+    }));
+  };
+
   const itemsPerPageFromBanner = (itemsPerPage) => {
     setItemsPerPage(itemsPerPage);
   };
 
   return (
-    <div className="max-w-container mx-auto px-4">
-      <Breadcrumbs title="Products" />
-      {/* ================= Products Start here =================== */}
-      <div className="w-full h-full flex pb-20 gap-10">
-        <div className="w-[20%] lgl:w-[25%] hidden mdl:inline-flex h-full">
-          <ShopSideNav />
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <Notification
+        message={notification.message}
+        type={notification.type}
+        isVisible={notification.visible}
+        onClose={hideNotification}
+      />
+      
+      <Breadcrumbs title="Shop" />
+      
+      <div className="flex flex-col lg:flex-row gap-8 py-8">
+        {/* Sidebar */}
+        <div className="lg:w-1/4">
+          <div className="sticky top-24">
+            <ShopSideNav />
+          </div>
         </div>
-        <div className="w-full mdl:w-[80%] lgl:w-[75%] h-full flex flex-col gap-10">
+        
+        {/* Main Content */}
+        <div className="lg:w-3/4">
           <ProductBanner itemsPerPageFromBanner={itemsPerPageFromBanner} />
-          <Pagination itemsPerPage={itemsPerPage} />
+          <div className="mt-8">
+            <Pagination 
+              itemsPerPage={itemsPerPage} 
+              showNotification={showNotification}
+            />
+          </div>
         </div>
       </div>
-      {/* ================= Products End here ===================== */}
     </div>
   );
 };

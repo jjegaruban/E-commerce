@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { resetCart } from "../../redux/orebiSlice";
 import { emptyCart } from "../../assets/images";
@@ -10,124 +10,213 @@ import ItemCard from "./ItemCard";
 const Cart = () => {
   const dispatch = useDispatch();
   const products = useSelector((state) => state.orebiReducer.products);
-  const [totalAmt, setTotalAmt] = useState("");
-  const [shippingCharge, setShippingCharge] = useState("");
+  const [totalAmt, setTotalAmt] = useState(0);
+  const [shippingCharge, setShippingCharge] = useState(0);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [discount, setDiscount] = useState(0);
+  
+  // Calculate total
   useEffect(() => {
     let price = 0;
-    products.map((item) => {
+    products.forEach((item) => {
       price += item.price * item.quantity;
-      return price;
     });
     setTotalAmt(price);
   }, [products]);
+
+  // Calculate shipping
   useEffect(() => {
     if (totalAmt <= 200) {
       setShippingCharge(30);
     } else if (totalAmt <= 400) {
       setShippingCharge(25);
-    } else if (totalAmt > 401) {
+    } else {
       setShippingCharge(20);
     }
   }, [totalAmt]);
+
+  // Apply coupon
+  const handleApplyCoupon = () => {
+    if (couponCode.toLowerCase() === "save10") {
+      setDiscount(totalAmt * 0.1);
+      setCouponApplied(true);
+    } else if (couponCode.toLowerCase() === "save20") {
+      setDiscount(totalAmt * 0.2);
+      setCouponApplied(true);
+    } else {
+      alert("Invalid coupon code");
+    }
+  };
+
+  // Calculate final total
+  const finalTotal = totalAmt + shippingCharge - discount;
+
   return (
-    <div className="max-w-container mx-auto px-4">
-      <Breadcrumbs title="Cart" />
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <Breadcrumbs title="Shopping Cart" />
+      
       {products.length > 0 ? (
-        <div className="pb-20">
-          <div className="w-full h-20 bg-[#F5F7F7] text-primeColor hidden lgl:grid grid-cols-5 place-content-center px-6 text-lg font-titleFont font-semibold">
-            <h2 className="col-span-2">Product</h2>
-            <h2>Price</h2>
-            <h2>Quantity</h2>
-            <h2>Sub Total</h2>
+        <div className="space-y-8">
+          {/* Cart Items Header - Desktop */}
+          <div className="hidden md:grid grid-cols-12 gap-4 py-4 border-b border-gray-200 text-sm font-medium text-gray-600">
+            <div className="col-span-6">Product</div>
+            <div className="col-span-2 text-center">Price</div>
+            <div className="col-span-2 text-center">Quantity</div>
+            <div className="col-span-2 text-right">Total</div>
           </div>
-          <div className="mt-5">
-            {products.map((item) => (
-              <div key={item._id}>
-                <ItemCard item={item} />
+
+          {/* Cart Items */}
+          <div className="space-y-4">
+            <AnimatePresence>
+              {products.map((item) => (
+                <motion.div
+                  key={item._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ItemCard item={item} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Action Bar */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-4 border-t border-gray-200">
+            <button
+              onClick={() => {
+                if (window.confirm("Are you sure you want to clear your cart?")) {
+                  dispatch(resetCart());
+                }
+              }}
+              className="px-6 py-2 border border-gray-300 text-sm hover:bg-gray-100 transition-colors"
+            >
+              Clear Cart
+            </button>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+              {/* Coupon Input */}
+              <div className="flex w-full sm:w-auto">
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Coupon code"
+                  className="px-4 py-2 border border-gray-300 text-sm focus:outline-none focus:border-gray-500 w-full sm:w-40"
+                  disabled={couponApplied}
+                />
+                <button
+                  onClick={handleApplyCoupon}
+                  disabled={couponApplied || !couponCode}
+                  className={`px-4 py-2 border border-l-0 border-gray-300 text-sm transition-colors ${
+                    couponApplied
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  Apply
+                </button>
               </div>
-            ))}
-          </div>
 
-          <button
-            onClick={() => dispatch(resetCart())}
-            className="py-2 px-10 bg-red-500 text-white font-semibold uppercase mb-4 hover:bg-red-700 duration-300"
-          >
-            Reset cart
-          </button>
-
-          <div className="flex flex-col mdl:flex-row justify-between border py-4 px-4 items-center gap-2 mdl:gap-0">
-            <div className="flex items-center gap-4">
-              <input
-                className="w-44 mdl:w-52 h-8 px-4 border text-primeColor text-sm outline-none border-gray-400"
-                type="text"
-                placeholder="Coupon Number"
-              />
-              <p className="text-sm mdl:text-base font-semibold">
-                Apply Coupon
-              </p>
+              {couponApplied && (
+                <span className="text-sm text-gray-600">
+                  Discount applied: -${discount.toFixed(2)}
+                </span>
+              )}
             </div>
-            <p className="text-lg font-semibold">Update Cart</p>
           </div>
-          <div className="max-w-7xl gap-4 flex justify-end mt-4">
-            <div className="w-96 flex flex-col gap-4">
-              <h1 className="text-2xl font-semibold text-right">Cart totals</h1>
-              <div>
-                <p className="flex items-center justify-between border-[1px] border-gray-400 border-b-0 py-1.5 text-lg px-4 font-medium">
-                  Subtotal
-                  <span className="font-semibold tracking-wide font-titleFont">
-                    ${totalAmt}
+
+          {/* Cart Summary */}
+          <div className="flex justify-end">
+            <div className="w-full md:w-96 bg-gray-50 p-6 space-y-4">
+              <h2 className="text-lg font-medium border-b border-gray-200 pb-2">
+                Order Summary
+              </h2>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="font-medium">${totalAmt.toFixed(2)}</span>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Shipping</span>
+                  <span className="font-medium">
+                    {shippingCharge === 0 ? "Free" : `$${shippingCharge.toFixed(2)}`}
                   </span>
-                </p>
-                <p className="flex items-center justify-between border-[1px] border-gray-400 border-b-0 py-1.5 text-lg px-4 font-medium">
-                  Shipping Charge
-                  <span className="font-semibold tracking-wide font-titleFont">
-                    ${shippingCharge}
-                  </span>
-                </p>
-                <p className="flex items-center justify-between border-[1px] border-gray-400 py-1.5 text-lg px-4 font-medium">
-                  Total
-                  <span className="font-bold tracking-wide text-lg font-titleFont">
-                    ${totalAmt + shippingCharge}
-                  </span>
-                </p>
+                </div>
+                
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Discount</span>
+                    <span>-${discount.toFixed(2)}</span>
+                  </div>
+                )}
+                
+                <div className="border-t border-gray-200 pt-2 mt-2">
+                  <div className="flex justify-between font-medium">
+                    <span>Total</span>
+                    <span className="text-lg">${finalTotal.toFixed(2)}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Including VAT
+                  </p>
+                </div>
               </div>
-              <div className="flex justify-end">
-                <Link to="/paymentgateway">
-                  <button className="w-52 h-10 bg-primeColor text-white hover:bg-black duration-300">
-                    Proceed to Checkout
-                  </button>
-                </Link>
-              </div>
+
+              <Link to="/paymentgateway">
+                <button className="w-full bg-gray-900 text-white py-3 text-sm hover:bg-gray-800 transition-colors mt-4">
+                  Proceed to Checkout
+                </button>
+              </Link>
+
+              <Link 
+                to="/shop" 
+                className="block text-center text-sm text-gray-600 hover:text-gray-900 border-b border-gray-300 pb-0.5 w-fit mx-auto"
+              >
+                Continue Shopping
+              </Link>
             </div>
           </div>
         </div>
       ) : (
+        // Empty Cart State
         <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4 }}
-          className="flex flex-col mdl:flex-row justify-center items-center gap-4 pb-20"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="py-16 text-center"
         >
-          <div>
-            <img
-              className="w-80 rounded-lg p-4 mx-auto"
-              src={emptyCart}
-              alt="emptyCart"
-            />
-          </div>
-          <div className="max-w-[500px] p-4 py-8 bg-white flex gap-4 flex-col items-center rounded-md shadow-lg">
-            <h1 className="font-titleFont text-xl font-bold uppercase">
-              Your Cart feels lonely.
-            </h1>
-            <p className="text-sm text-center px-10 -mt-2">
-              Your Shopping cart lives to serve. Give it purpose - fill it with
-              books, electronics, videos, etc. and make it happy.
+          <div className="max-w-md mx-auto">
+            <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <span className="text-4xl text-gray-400">🛒</span>
+            </div>
+            
+            <h2 className="text-2xl font-light text-gray-900 mb-3">
+              Your cart is empty
+            </h2>
+            
+            <p className="text-gray-600 mb-8">
+              Looks like you haven't added anything to your cart yet.
+              Browse our shop to find something you'll love.
             </p>
+            
             <Link to="/shop">
-              <button className="bg-primeColor rounded-md cursor-pointer hover:bg-black active:bg-gray-900 px-8 py-2 font-titleFont font-semibold text-lg text-gray-200 hover:text-white duration-300">
-                Continue Shopping
+              <button className="bg-gray-900 text-white px-8 py-3 text-sm hover:bg-gray-800 transition-colors">
+                Start Shopping
               </button>
             </Link>
+            
+            <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-500">
+              <Link to="/offer" className="hover:text-gray-900 border-b border-gray-300 pb-0.5">
+                Special Offers
+              </Link>
+              <Link to="/contact" className="hover:text-gray-900 border-b border-gray-300 pb-0.5">
+                Need Help?
+              </Link>
+            </div>
           </div>
         </motion.div>
       )}

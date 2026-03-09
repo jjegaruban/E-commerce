@@ -1,6 +1,6 @@
-import React from "react";
-import { ImCross } from "react-icons/im";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
+import { motion } from "framer-motion";
 import {
   deleteItem,
   drecreaseQuantity,
@@ -9,40 +9,93 @@ import {
 
 const ItemCard = ({ item }) => {
   const dispatch = useDispatch();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = () => {
+    setIsDeleting(true);
+    setTimeout(() => {
+      dispatch(deleteItem(item._id));
+    }, 300);
+  };
+
   return (
-    <div className="w-full grid grid-cols-5 mb-4 border py-2">
-      <div className="flex col-span-5 mdl:col-span-2 items-center gap-4 ml-4">
-        <ImCross
-          onClick={() => dispatch(deleteItem(item._id))}
-          className="text-primeColor hover:text-red-500 duration-300 cursor-pointer"
-        />
-        <img className="w-32 h-32" src={item.image} alt="productImage" />
-        <h1 className="font-titleFont font-semibold">{item.name}</h1>
-      </div>
-      <div className="col-span-5 mdl:col-span-3 flex items-center justify-between py-4 mdl:py-0 px-4 mdl:px-0 gap-6 mdl:gap-0">
-        <div className="flex w-1/3 items-center text-lg font-semibold">
-          ${item.price}
+    <motion.div
+      layout
+      className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 border border-gray-200 hover:border-gray-300 transition-colors bg-white"
+    >
+      {/* Product Info - Mobile & Desktop */}
+      <div className="flex items-center gap-4 flex-1 w-full md:w-auto">
+        {/* Delete Button */}
+        <button
+          onClick={handleDelete}
+          className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-500 hover:border-gray-500 hover:text-gray-900 transition-colors flex-shrink-0"
+          aria-label="Remove item"
+        >
+          ×
+        </button>
+
+        {/* Product Image */}
+        <div className="w-20 h-20 bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+          {item.image ? (
+            <img 
+              src={item.image} 
+              alt={item.name} 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-2xl text-gray-300">📦</span>
+          )}
         </div>
-        <div className="w-1/3 flex items-center gap-6 text-lg">
-          <span
+
+        {/* Product Name */}
+        <div className="flex-1">
+          <h3 className="font-medium text-gray-900 line-clamp-2">
+            {item.name}
+          </h3>
+          <p className="text-sm text-gray-500 mt-1 md:hidden">
+            ${item.price} each
+          </p>
+        </div>
+      </div>
+
+      {/* Price - Desktop */}
+      <div className="hidden md:block w-24 text-center">
+        <span className="text-gray-900">${item.price}</span>
+      </div>
+
+      {/* Quantity Controls */}
+      <div className="flex items-center justify-between md:justify-center w-full md:w-32 gap-4">
+        <div className="flex items-center border border-gray-300">
+          <button
             onClick={() => dispatch(drecreaseQuantity({ _id: item._id }))}
-            className="w-6 h-6 bg-gray-100 text-2xl flex items-center justify-center hover:bg-gray-300 cursor-pointer duration-300 border-[1px] border-gray-300 hover:border-gray-300"
+            className="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-100 transition-colors border-r border-gray-300"
+            aria-label="Decrease quantity"
           >
-            -
-          </span>
-          <p>{item.quantity}</p>
-          <span
+            −
+          </button>
+          <span className="w-8 text-center text-sm">{item.quantity}</span>
+          <button
             onClick={() => dispatch(increaseQuantity({ _id: item._id }))}
-            className="w-6 h-6 bg-gray-100 text-2xl flex items-center justify-center hover:bg-gray-300 cursor-pointer duration-300 border-[1px] border-gray-300 hover:border-gray-300"
+            className="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-100 transition-colors border-l border-gray-300"
+            aria-label="Increase quantity"
           >
             +
+          </button>
+        </div>
+
+        {/* Mobile Price */}
+        <div className="md:hidden">
+          <span className="font-medium">
+            ${(item.price * item.quantity).toFixed(2)}
           </span>
         </div>
-        <div className="w-1/3 flex items-center font-titleFont font-bold text-lg">
-          <p>${item.quantity * item.price}</p>
-        </div>
       </div>
-    </div>
+
+      {/* Subtotal - Desktop */}
+      <div className="hidden md:block w-24 text-right font-medium">
+        ${(item.price * item.quantity).toFixed(2)}
+      </div>
+    </motion.div>
   );
 };
 

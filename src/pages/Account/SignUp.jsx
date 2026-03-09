@@ -1,411 +1,526 @@
 import React, { useState } from "react";
-import { BsCheckCircleFill } from "react-icons/bs";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logoLight } from "../../assets/images";
 
 const SignUp = () => {
-  // ============= Initial State Start here =============
-  const [clientName, setClientName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [zip, setZip] = useState("");
-  const [checked, setChecked] = useState(false);
-  // ============= Initial State End here ===============
-  // ============= Error Msg Start here =================
-  const [errClientName, setErrClientName] = useState("");
-  const [errEmail, setErrEmail] = useState("");
-  const [errPhone, setErrPhone] = useState("");
-  const [errPassword, setErrPassword] = useState("");
-  const [errAddress, setErrAddress] = useState("");
-  const [errCity, setErrCity] = useState("");
-  const [errCountry, setErrCountry] = useState("");
-  const [errZip, setErrZip] = useState("");
-  // ============= Error Msg End here ===================
+  const navigate = useNavigate();
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    address: "",
+    city: "",
+    country: "",
+    zip: ""
+  });
+  
+  // Error state
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const [successMsg, setSuccessMsg] = useState("");
-  // ============= Event Handler Start here =============
-  const handleName = (e) => {
-    setClientName(e.target.value);
-    setErrClientName("");
-  };
-  const handleEmail = (e) => {
-    setEmail(e.target.value);
-    setErrEmail("");
-  };
-  const handlePhone = (e) => {
-    setPhone(e.target.value);
-    setErrPhone("");
-  };
-  const handlePassword = (e) => {
-    setPassword(e.target.value);
-    setErrPassword("");
-  };
-  const handleAddress = (e) => {
-    setAddress(e.target.value);
-    setErrAddress("");
-  };
-  const handleCity = (e) => {
-    setCity(e.target.value);
-    setErrCity("");
-  };
-  const handleCountry = (e) => {
-    setCountry(e.target.value);
-    setErrCountry("");
-  };
-  const handleZip = (e) => {
-    setZip(e.target.value);
-    setErrZip("");
-  };
-  // ============= Event Handler End here ===============
-  // ================= Email Validation start here =============
-  const EmailValidation = (email) => {
-    return String(email)
-      .toLowerCase()
-      .match(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i);
-  };
-  // ================= Email Validation End here ===============
 
-  const handleSignUp = (e) => {
-    e.preventDefault();
-    if (checked) {
-      if (!clientName) {
-        setErrClientName("Enter your name");
-      }
-      if (!email) {
-        setErrEmail("Enter your email");
-      } else {
-        if (!EmailValidation(email)) {
-          setErrEmail("Enter a Valid email");
-        }
-      }
-      if (!phone) {
-        setErrPhone("Enter your phone number");
-      }
-      if (!password) {
-        setErrPassword("Create a password");
-      } else {
-        if (password.length < 6) {
-          setErrPassword("Passwords must be at least 6 characters");
-        }
-      }
-      if (!address) {
-        setErrAddress("Enter your address");
-      }
-      if (!city) {
-        setErrCity("Enter your city name");
-      }
-      if (!country) {
-        setErrCountry("Enter the country you are residing");
-      }
-      if (!zip) {
-        setErrZip("Enter the zip code of your area");
-      }
-      // ============== Getting the value ==============
-      if (
-        clientName &&
-        email &&
-        EmailValidation(email) &&
-        password &&
-        password.length >= 6 &&
-        address &&
-        city &&
-        country &&
-        zip
-      ) {
-        setSuccessMsg(
-          `Hello dear ${clientName}, Welcome you to OREBI Admin panel. We received your Sign up request. We are processing to validate your access. Till then stay connected and additional assistance will be sent to you by your mail at ${email}`
-        );
-        setClientName("");
-        setEmail("");
-        setPhone("");
-        setPassword("");
-        setAddress("");
-        setCity("");
-        setCountry("");
-        setZip("");
-      }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
     }
   };
+
+  const validateEmail = (email) => {
+    return String(email)
+      .toLowerCase()
+      .match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+  };
+
+  const validateStep = () => {
+    const newErrors = {};
+    
+    if (currentStep === 1) {
+      if (!formData.fullName.trim()) {
+        newErrors.fullName = "Full name is required";
+      } else if (formData.fullName.trim().length < 2) {
+        newErrors.fullName = "Name must be at least 2 characters";
+      }
+      
+      if (!formData.email.trim()) {
+        newErrors.email = "Email is required";
+      } else if (!validateEmail(formData.email)) {
+        newErrors.email = "Please enter a valid email";
+      }
+      
+      if (!formData.phone.trim()) {
+        newErrors.phone = "Phone number is required";
+      } else if (!/^\d{10,}$/.test(formData.phone.replace(/\D/g, ''))) {
+        newErrors.phone = "Please enter a valid phone number";
+      }
+      
+      if (!formData.password) {
+        newErrors.password = "Password is required";
+      } else if (formData.password.length < 8) {
+        newErrors.password = "Password must be at least 8 characters";
+      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+        newErrors.password = "Password must contain uppercase, lowercase and number";
+      }
+      
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+    } else if (currentStep === 2) {
+      if (!formData.address.trim()) {
+        newErrors.address = "Address is required";
+      }
+      if (!formData.city.trim()) {
+        newErrors.city = "City is required";
+      }
+      if (!formData.country.trim()) {
+        newErrors.country = "Country is required";
+      }
+      if (!formData.zip.trim()) {
+        newErrors.zip = "ZIP code is required";
+      }
+    }
+    
+    return newErrors;
+  };
+
+  const handleNext = () => {
+    const stepErrors = validateStep();
+    if (Object.keys(stepErrors).length === 0) {
+      setCurrentStep(2);
+    } else {
+      setErrors(stepErrors);
+    }
+  };
+
+  const handleBack = () => {
+    setCurrentStep(1);
+    setErrors({});
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!acceptedTerms) {
+      alert("Please accept the Terms of Service and Privacy Policy");
+      return;
+    }
+    
+    const stepErrors = validateStep();
+    if (Object.keys(stepErrors).length === 0) {
+      setIsLoading(true);
+      
+      // Simulate API call
+      setTimeout(() => {
+        setSuccessMsg(`Welcome ${formData.fullName}! Your account has been created successfully.`);
+        setIsLoading(false);
+        
+        // Reset form after success
+        setTimeout(() => {
+          navigate("/signin");
+        }, 3000);
+      }, 1500);
+    } else {
+      setErrors(stepErrors);
+    }
+  };
+
   return (
-    <div className="w-full h-screen flex items-center justify-start">
-      <div className="w-1/2 hidden lgl:inline-flex h-full text-white">
-        <div className="w-[450px] h-full bg-primeColor px-10 flex flex-col gap-6 justify-center">
+    <div className="min-h-screen bg-white flex">
+      {/* Left side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gray-50 flex-col justify-between p-12">
+        <div>
           <Link to="/">
-            <img src={logoLight} alt="logoImg" className="w-28" />
+            <img src={logoLight} alt="Jegaruban" className="w-24" />
           </Link>
-          <div className="flex flex-col gap-1 -mt-1">
-            <h1 className="font-titleFont text-xl font-medium">
-              Get started for free
-            </h1>
-            <p className="text-base">Create your account to access more</p>
-          </div>
-          <div className="w-[300px] flex items-start gap-3">
-            <span className="text-green-500 mt-1">
-              <BsCheckCircleFill />
-            </span>
-            <p className="text-base text-gray-300">
-              <span className="text-white font-semibold font-titleFont">
-                Get started fast with OREBI
-              </span>
-              <br />
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
-              nisi dolor recusandae consectetur!
-            </p>
-          </div>
-          <div className="w-[300px] flex items-start gap-3">
-            <span className="text-green-500 mt-1">
-              <BsCheckCircleFill />
-            </span>
-            <p className="text-base text-gray-300">
-              <span className="text-white font-semibold font-titleFont">
-                Access all OREBI services
-              </span>
-              <br />
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
-              nisi dolor recusandae consectetur!
-            </p>
-          </div>
-          <div className="w-[300px] flex items-start gap-3">
-            <span className="text-green-500 mt-1">
-              <BsCheckCircleFill />
-            </span>
-            <p className="text-base text-gray-300">
-              <span className="text-white font-semibold font-titleFont">
-                Trusted by online Shoppers
-              </span>
-              <br />
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
-              nisi dolor recusandae consectetur!
-            </p>
-          </div>
-          <div className="flex items-center justify-between mt-10">
-            <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-              © OREBI
-            </p>
-            <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-              Terms
-            </p>
-            <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-              Privacy
-            </p>
-            <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-              Security
-            </p>
+        </div>
+        
+        <div className="max-w-md">
+          <h1 className="text-4xl font-light text-gray-900 mb-4">
+            SHOP NOW
+          </h1>
+          <p className="text-gray-600 text-lg mb-8">
+            Create an account to enjoy faster checkout, order tracking, and exclusive offers.
+          </p>
+          
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-medium">
+                1
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Account details</h3>
+                <p className="text-sm text-gray-600">Your basic information and login</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-medium">
+                2
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Shipping address</h3>
+                <p className="text-sm text-gray-600">Where we'll deliver your orders</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-medium">
+                3
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">All set</h3>
+                <p className="text-sm text-gray-600">Start shopping</p>
+              </div>
+            </div>
           </div>
         </div>
+        
+        <div className="flex items-center gap-6 text-sm text-gray-500">
+          <Link to="/" className="hover:text-gray-900 transition-colors">
+            © Jegaruban
+          </Link>
+          <Link to="/terms" className="hover:text-gray-900 transition-colors">
+            Terms
+          </Link>
+          <Link to="/privacy" className="hover:text-gray-900 transition-colors">
+            Privacy
+          </Link>
+          <Link to="/security" className="hover:text-gray-900 transition-colors">
+            Security
+          </Link>
+        </div>
       </div>
-      <div className="w-full lgl:w-[500px] h-full flex flex-col justify-center">
-        {successMsg ? (
-          <div className="w-[500px]">
-            <p className="w-full px-4 py-10 text-green-500 font-medium font-titleFont">
-              {successMsg}
-            </p>
-            <Link to="/signin">
-              <button
-                className="w-full h-10 bg-primeColor rounded-md text-gray-200 text-base font-titleFont font-semibold 
-            tracking-wide hover:bg-black hover:text-white duration-300"
-              >
-                Sign in
-              </button>
-            </Link>
-          </div>
-        ) : (
-          <form className="w-full lgl:w-[500px] h-screen flex items-center justify-center">
-            <div className="px-6 py-4 w-full h-[96%] flex flex-col justify-start overflow-y-scroll scrollbar-thin scrollbar-thumb-primeColor">
-              <h1 className="font-titleFont underline underline-offset-4 decoration-[1px] font-semibold text-2xl mdl:text-3xl mb-4">
-                Create your account
-              </h1>
-              <div className="flex flex-col gap-3">
-                {/* client name */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Full Name
-                  </p>
-                  <input
-                    onChange={handleName}
-                    value={clientName}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="text"
-                    placeholder="eg. John Doe"
-                  />
-                  {errClientName && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errClientName}
-                    </p>
-                  )}
-                </div>
-                {/* Email */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Work Email
-                  </p>
-                  <input
-                    onChange={handleEmail}
-                    value={email}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="email"
-                    placeholder="john@workemail.com"
-                  />
-                  {errEmail && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errEmail}
-                    </p>
-                  )}
-                </div>
-                {/* Phone Number */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Phone Number
-                  </p>
-                  <input
-                    onChange={handlePhone}
-                    value={phone}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="text"
-                    placeholder="008801234567891"
-                  />
-                  {errPhone && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errPhone}
-                    </p>
-                  )}
-                </div>
-                {/* Password */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Password
-                  </p>
-                  <input
-                    onChange={handlePassword}
-                    value={password}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="password"
-                    placeholder="Create password"
-                  />
-                  {errPassword && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errPassword}
-                    </p>
-                  )}
-                </div>
-                {/* Address */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Address
-                  </p>
-                  <input
-                    onChange={handleAddress}
-                    value={address}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="text"
-                    placeholder="road-001, house-115, example area"
-                  />
-                  {errAddress && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errAddress}
-                    </p>
-                  )}
-                </div>
-                {/* City */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    City
-                  </p>
-                  <input
-                    onChange={handleCity}
-                    value={city}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="text"
-                    placeholder="Your city"
-                  />
-                  {errCity && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errCity}
-                    </p>
-                  )}
-                </div>
-                {/* Country */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Country
-                  </p>
-                  <input
-                    onChange={handleCountry}
-                    value={country}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="text"
-                    placeholder="Your country"
-                  />
-                  {errCountry && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errCountry}
-                    </p>
-                  )}
-                </div>
-                {/* Zip code */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Zip/Postal code
-                  </p>
-                  <input
-                    onChange={handleZip}
-                    value={zip}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="text"
-                    placeholder="Your country"
-                  />
-                  {errZip && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errZip}
-                    </p>
-                  )}
-                </div>
-                {/* Checkbox */}
-                <div className="flex items-start mdl:items-center gap-2">
-                  <input
-                    onChange={() => setChecked(!checked)}
-                    className="w-4 h-4 mt-1 mdl:mt-0 cursor-pointer"
-                    type="checkbox"
-                  />
-                  <p className="text-sm text-primeColor">
-                    I agree to the OREBI{" "}
-                    <span className="text-blue-500">Terms of Service </span>and{" "}
-                    <span className="text-blue-500">Privacy Policy</span>.
-                  </p>
-                </div>
-                <button
-                  onClick={handleSignUp}
-                  className={`${
-                    checked
-                      ? "bg-primeColor hover:bg-black hover:text-white cursor-pointer"
-                      : "bg-gray-500 hover:bg-gray-500 hover:text-gray-200 cursor-none"
-                  } w-full text-gray-200 text-base font-medium h-10 rounded-md hover:text-white duration-300`}
-                >
-                  Create Account
-                </button>
-                <p className="text-sm text-center font-titleFont font-medium">
-                  Don't have an Account?{" "}
-                  <Link to="/signin">
-                    <span className="hover:text-blue-600 duration-300">
-                      Sign in
-                    </span>
+
+      {/* Right side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          {successMsg ? (
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl">✓</span>
+              </div>
+              <h2 className="text-2xl font-light text-gray-900 mb-3">
+                Account created!
+              </h2>
+              <p className="text-gray-600 mb-6">
+                {successMsg}
+              </p>
+              <p className="text-sm text-gray-500">
+                Redirecting you to sign in...
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="text-center lg:text-left mb-8">
+                <h2 className="text-3xl font-light text-gray-900 mb-2">
+                  Create account
+                </h2>
+                <p className="text-gray-600">
+                  Already have an account?{" "}
+                  <Link to="/signin" className="border-b border-gray-300 pb-0.5 hover:border-gray-900 transition-colors">
+                    Sign in
                   </Link>
                 </p>
               </div>
-            </div>
-          </form>
-        )}
+
+              {/* Progress indicator for mobile */}
+              <div className="flex items-center justify-center gap-2 mb-6 lg:hidden">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                  currentStep === 1 ? "bg-gray-900 text-white" : "bg-gray-200 text-gray-600"
+                }`}>
+                  1
+                </div>
+                <div className="w-8 h-0.5 bg-gray-200"></div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                  currentStep === 2 ? "bg-gray-900 text-white" : "bg-gray-200 text-gray-600"
+                }`}>
+                  2
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmit}>
+                {/* Step 1: Account Details */}
+                {currentStep === 1 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full name
+                      </label>
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        placeholder="John Doe"
+                        className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors ${
+                          errors.fullName
+                            ? "border-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:border-gray-500"
+                        }`}
+                      />
+                      {errors.fullName && (
+                        <p className="text-sm text-red-500 mt-2">{errors.fullName}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email address
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="name@example.com"
+                        className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors ${
+                          errors.email
+                            ? "border-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:border-gray-500"
+                        }`}
+                      />
+                      {errors.email && (
+                        <p className="text-sm text-red-500 mt-2">{errors.email}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone number
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="+1 234 567 8900"
+                        className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors ${
+                          errors.phone
+                            ? "border-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:border-gray-500"
+                        }`}
+                      />
+                      {errors.phone && (
+                        <p className="text-sm text-red-500 mt-2">{errors.phone}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          placeholder="Create a password"
+                          className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors ${
+                            errors.password
+                              ? "border-red-500 focus:border-red-500"
+                              : "border-gray-300 focus:border-gray-500"
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          {showPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                      {errors.password && (
+                        <p className="text-sm text-red-500 mt-2">{errors.password}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Confirm password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          name="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          placeholder="Confirm your password"
+                          className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors ${
+                            errors.confirmPassword
+                              ? "border-red-500 focus:border-red-500"
+                              : "border-gray-300 focus:border-gray-500"
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          {showConfirmPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                      {errors.confirmPassword && (
+                        <p className="text-sm text-red-500 mt-2">{errors.confirmPassword}</p>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors mt-4"
+                    >
+                      Continue
+                    </button>
+                  </div>
+                )}
+
+                {/* Step 2: Address Details */}
+                {currentStep === 2 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Street address
+                      </label>
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        placeholder="123 Main St"
+                        className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors ${
+                          errors.address
+                            ? "border-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:border-gray-500"
+                        }`}
+                      />
+                      {errors.address && (
+                        <p className="text-sm text-red-500 mt-2">{errors.address}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleChange}
+                        placeholder="New York"
+                        className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors ${
+                          errors.city
+                            ? "border-red-500 focus:border-red-500"
+                            : "border-gray-300 focus:border-gray-500"
+                        }`}
+                      />
+                      {errors.city && (
+                        <p className="text-sm text-red-500 mt-2">{errors.city}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          name="country"
+                          value={formData.country}
+                          onChange={handleChange}
+                          placeholder="USA"
+                          className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors ${
+                            errors.country
+                              ? "border-red-500 focus:border-red-500"
+                              : "border-gray-300 focus:border-gray-500"
+                          }`}
+                        />
+                        {errors.country && (
+                          <p className="text-sm text-red-500 mt-2">{errors.country}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          ZIP code
+                        </label>
+                        <input
+                          type="text"
+                          name="zip"
+                          value={formData.zip}
+                          onChange={handleChange}
+                          placeholder="10001"
+                          className={`w-full px-4 py-3 bg-white border rounded-lg outline-none transition-colors ${
+                            errors.zip
+                              ? "border-red-500 focus:border-red-500"
+                              : "border-gray-300 focus:border-gray-500"
+                          }`}
+                        />
+                        {errors.zip && (
+                          <p className="text-sm text-red-500 mt-2">{errors.zip}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 mt-4">
+                      <input
+                        type="checkbox"
+                        id="terms"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        className="w-4 h-4 mt-1"
+                      />
+                      <label htmlFor="terms" className="text-sm text-gray-600">
+                        I agree to the{" "}
+                        <Link to="/terms" className="border-b border-gray-300 pb-0.5 hover:border-gray-900">
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link to="/privacy" className="border-b border-gray-300 pb-0.5 hover:border-gray-900">
+                          Privacy Policy
+                        </Link>
+                      </label>
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={handleBack}
+                        className="flex-1 bg-white text-gray-700 py-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="flex-1 bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                      >
+                        {isLoading ? "Creating..." : "Create account"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </form>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

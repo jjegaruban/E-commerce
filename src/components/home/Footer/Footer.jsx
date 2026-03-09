@@ -6,166 +6,138 @@ import { paymentCard } from "../../../assets/images";
 import Image from "../../designLayouts/Image";
 
 const Footer = () => {
-  const [emailInfo, setEmailInfo] = useState("");
-  const [subscription, setSubscription] = useState(false);
-  const [errMsg, setErrMsg] = useState("");
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+  const [error, setError] = useState("");
 
-  const emailValidation = () => {
-    return String(emailInfo)
-      .toLocaleLowerCase()
-      .match(/^\w+([-]?\w+)*@\w+([-]?\w+)*(\.\w{2,3})+$/);
+  const validateEmail = (email) => {
+    return String(email)
+      .toLowerCase()
+      .match(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/);
   };
 
-  const handleSubscription = () => {
-    if (emailInfo === "") {
-      setErrMsg("Please provide an Email !");
-    } else if (!emailValidation(emailInfo)) {
-      setErrMsg("Please give a valid Email!");
+  const handleSubscribe = () => {
+    if (!email) {
+      setError("Please enter your email.");
+    } else if (!validateEmail(email)) {
+      setError("Please enter a valid email.");
     } else {
-      setSubscription(true);
-      setErrMsg("");
-      setEmailInfo("");
+      setSubscribed(true);
+      setError("");
+      setEmail("");
     }
   };
+
   return (
-    <div className="w-full bg-[#F5F5F3] py-20">
-      <div className="max-w-container mx-auto grid grid-cols-1 md:grid-cols-2  xl:grid-cols-6 px-4 gap-10">
-        <div className="col-span-2">
-          <FooterListTitle title=" More about Orebi Shop" />
-          <div className="flex flex-col gap-6">
-            <p className="text-base w-full xl:w-[80%]">
-            "Orebi is your destination for one-of-a-kind treasures. We curate a carefully selected collection of handcrafted items from around the world, each piece telling a unique story. Discover unique gifts, home decor, and fashion accessories that reflect your personal style and add a touch of individuality to your life."
-            </p>
-            <ul className="flex items-center gap-2">
-              <a
-                href="#"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <li className="w-7 h-7 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
-                  <FaYoutube />
-                </li>
-              </a>
-              <a
-                href="https://github.com/jjegaruban"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <li className="w-7 h-7 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
-                  <FaGithub />
-                </li>
-              </a>
-              <a
-                href="#"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <li className="w-7 h-7 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
-                  <FaFacebook />
-                </li>
-              </a>
-              <a
-                href="#"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <li className="w-7 h-7 bg-primeColor text-gray-100 hover:text-white cursor-pointer text-lg rounded-full flex justify-center items-center hover:bg-black duration-300">
-                  <FaLinkedin />
-                </li>
-              </a>
-            </ul>
+    <footer className="w-full bg-[#F5F5F3] py-16">
+      <div className="max-w-container mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-10 px-4">
+
+        {/* About */}
+        <div>
+          <FooterListTitle title="About Our Store" />
+          <p className="text-sm text-gray-600 leading-6 mt-4">
+            Discover quality products curated for modern lifestyles. 
+            We offer fashion, electronics, accessories and more with 
+            secure payments and fast delivery.
+          </p>
+
+          <div className="flex gap-3 mt-6">
+            <a href="#" target="_blank" rel="noreferrer">
+              <div className="footerIcon">
+                <FaYoutube />
+              </div>
+            </a>
+
+            <a href="https://github.com/jjegaruban" target="_blank" rel="noreferrer">
+              <div className="footerIcon">
+                <FaGithub />
+              </div>
+            </a>
+
+            <a href="#" target="_blank" rel="noreferrer">
+              <div className="footerIcon">
+                <FaFacebook />
+              </div>
+            </a>
+
+            <a href="#" target="_blank" rel="noreferrer">
+              <div className="footerIcon">
+                <FaLinkedin />
+              </div>
+            </a>
           </div>
         </div>
+
+        {/* Shop */}
         <div>
           <FooterListTitle title="Shop" />
-          <ul className="flex flex-col gap-2">
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              Accesories
-            </li>
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              Clothes
-            </li>
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              Electronics
-            </li>
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              Home appliances
-            </li>
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              New Arrivals
-            </li>
+          <ul className="footerList">
+            <li>Accessories</li>
+            <li>Clothing</li>
+            <li>Electronics</li>
+            <li>Home Appliances</li>
+            <li>New Arrivals</li>
           </ul>
         </div>
-        <div>
-          <FooterListTitle title="Your account" />
-          <ul className="flex flex-col gap-2">
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              Profile
-            </li>
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              Orders
-            </li>
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              Addresses
-            </li>
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              Account Details
-            </li>
-            <li className="font-titleFont text-base text-lightText hover:text-black hover:underline decoration-[1px] decoration-gray-500 underline-offset-2 cursor-pointer duration-300">
-              Payment Options
-            </li>
-          </ul>
-        </div>
-        <div className="col-span-2 flex flex-col items-center w-full px-4">
-          <FooterListTitle title="Subscribe to our newsletter." />
-          <div className="w-full">
-            <p className="text-center mb-4">
-              A at pellentesque et mattis porta enim elementum.
-            </p>
-            {subscription ? (
-              <motion.p
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="w-full text-center text-base font-titleFont font-semibold text-green-600"
-              >
-                Subscribed Successfully !
-              </motion.p>
-            ) : (
-              <div className="w-full flex-col xl:flex-row flex justify-between items-center gap-4">
-                <div className="flex flex-col w-full">
-                  <input
-                    onChange={(e) => setEmailInfo(e.target.value)}
-                    value={emailInfo}
-                    className="w-full h-12 border-b border-gray-400 bg-transparent px-4 text-primeColor text-lg placeholder:text-base outline-none"
-                    type="text"
-                    placeholder="Insert your email ...*"
-                  />
-                  {errMsg && (
-                    <p className="text-red-600 text-sm font-semibold font-titleFont text-center animate-bounce mt-2">
-                      {errMsg}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={handleSubscription}
-                  className="bg-white text-lightText w-[30%] h-10 hover:bg-black hover:text-white duration-300 text-base tracking-wide"
-                >
-                  Subscribe
-                </button>
-              </div>
-            )}
 
-            <Image
-              className={`w-[80%] lg:w-[60%] mx-auto ${
-                subscription ? "mt-2" : "mt-6"
-              }`}
-              imgSrc={paymentCard}
-            />
-          </div>
+        {/* Account */}
+        <div>
+          <FooterListTitle title="Your Account" />
+          <ul className="footerList">
+            <li>Profile</li>
+            <li>Orders</li>
+            <li>Addresses</li>
+            <li>Account Details</li>
+            <li>Payment Methods</li>
+          </ul>
         </div>
+
+        {/* Newsletter */}
+        <div>
+          <FooterListTitle title="Newsletter" />
+          <p className="text-sm text-gray-600 mb-4">
+            Subscribe to receive updates, new products, and special offers.
+          </p>
+
+          {subscribed ? (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-green-600 font-semibold"
+            >
+              Subscription successful!
+            </motion.p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-11 px-4 border border-gray-300 outline-none"
+              />
+
+              {error && (
+                <p className="text-red-500 text-sm">{error}</p>
+              )}
+
+              <button
+                onClick={handleSubscribe}
+                className="bg-black text-white py-2 hover:bg-gray-800 duration-300"
+              >
+                Subscribe
+              </button>
+            </div>
+          )}
+
+          <Image
+            className="w-[70%] mt-6"
+            imgSrc={paymentCard}
+          />
+        </div>
+
       </div>
-    </div>
+    </footer>
   );
 };
 
